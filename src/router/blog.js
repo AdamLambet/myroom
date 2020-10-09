@@ -17,35 +17,36 @@ const hanldleBlogRouter = (req, res) => {
 
     // 获取博客详情
     if (method === 'GET' && path === '/api/blog/detail') {
-        const data = getDetail(id);
-
-        return new SuccessModel(data);
+        const detail = getDetail(id);
+        return detail.then(detailData => {
+            return new SuccessModel(detailData);
+        })
     }
 
-    // 新建一篇博客
+    // 新建一篇博客 { }
     if (method === 'POST' && path === '/api/blog/new') {
-        const blogData = newBlog(req.body);
-        return new SuccessModel(blogData);
+        req.body.author = 'zhangsan'; // todo
+        const result = newBlog(req.body);
+        return result.then(data => {
+            return new SuccessModel(data)
+        })
     }
 
     // 更新一篇博客
     if (method === 'POST' && path === '/api/blog/update') {
-        const result = updateBlog(req.body);
-        if (result) {
-            return new SuccessModel();
-        } else {
-            return new ErrorModel('blog update fail');
-        }
+        const result = updateBlog(id, req.body);
+        return result.then(updateResult => {
+            return updateResult;
+        })
     }
 
     // 删除一篇博客
     if (method === 'POST' && path === '/api/blog/delete') {
-        const result = delBlog(id);
-        if (result) {
-            return new SuccessModel();
-        } else {
-            return new ErrorModel('blog delete fail');
-        }
+        const author = 'zhangsan'; // todo
+        const result = delBlog(id, author);
+        return result.then(delResult => {
+            return delResult;
+        })
     }
 
 }
