@@ -1,7 +1,11 @@
 const querystring = require('querystring');
+const user = require('./src/controller/user');
 
 const handleBlogRouter = require('./src/router/blog');
-const handleUserRouter = require('./src/router/user');
+const { handleUserRouter, getCookieExpires } = require('./src/router/user');
+const { get, set } = require('./src/db/redis'); 
+// session数据
+// const SESSION_DATA = {};
 
 // 用于处理postData
 const getPostData = (req) => {
@@ -57,16 +61,38 @@ const serverHandle = (req, res) => {
     console.log(`cookie is`,  req.cookie);
 
     // 解析session
-    
+    let needSetCookie = false;
+    let userId = req.cookie.userId;
 
+    // 如果不存在userId 初始化
+    if (!userId) {
+        needSetCookie = true;
+        userId = `${Date.now()}_${Math.random()}`;
+        set(userId, {});
+    }
+
+    // 处理session
+    req.sessionId = userId;
+    get(req.sessionId).then(userData => {
+        if (userData == null) {
+            set(req.sessionId, {});
+            req.session = {}
+        } else {
+            req.session = userData
+        }
+        return getPostData(req);
+    })
     // 处理postData
-    getPostData(req).then((postData) => {
+    .then((postData) => {
         console.log(postData)
         req.body = postData;
         // 处理blog路由
         const blogResult = handleBlogRouter(req, res);
         if (blogResult) {
             blogResult.then(blogData => {
+                if (needSetCookie) {
+                    res.setHeader('Set-Cookie', `userId=${userId}; path=/; httpOnly; expires=${getCookieExpires()}`);
+                }
                 res.end(
                     JSON.stringify(blogData)
                 )
@@ -78,6 +104,9 @@ const serverHandle = (req, res) => {
         const userResult = handleUserRouter(req, res);
         if (userResult) {
             userResult.then(userData => {
+                if (needSetCookie) {
+                    res.setHeader('Set-Cookie', `userId=${userId}; path=/; httpOnly; expires=${getCookieExpires()}`);
+                }
                 res.end(
                     JSON.stringify(userData)
                 )
