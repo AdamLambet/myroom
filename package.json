@@ -2,7 +2,7 @@
   "name": "myblog",
   "version": "1.0.0",
   "description": "blog",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "npm run test",
     "dev": "cross-env NODE_ENV=dev nodemon ./bin/www.js",
