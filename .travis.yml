@@ -5,3 +5,9 @@ install:
   - npm install
 script:
   - node -v
+notifications:
+  email:
+    recipients:
+    - nefu_yanglin@163.com
+    on_success: always
+    on_failure: always
