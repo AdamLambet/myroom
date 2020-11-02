@@ -4,8 +4,8 @@ const user = require('./src/controller/user');
 const handleBlogRouter = require('./src/router/blog');
 const { handleUserRouter, getCookieExpires } = require('./src/router/user');
 const { get, set } = require('./src/db/redis'); 
-// session数据
-// const SESSION_DATA = {};
+const { access } = require('./src/utils/log');
+const { request } = require('http');
 
 // 用于处理postData
 const getPostData = (req) => {
@@ -36,6 +36,9 @@ const getPostData = (req) => {
 }
 
 const serverHandle = (req, res) => {
+    // 记录access log
+    access(`${req.method} -- ${req.url} -- ${req.headers['user-agent']} -- ${Date.now()}`);
+
     // 设置返回格式
     res.setHeader('Content-type', 'application/json');
 
